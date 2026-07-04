@@ -69,7 +69,7 @@ app.use('/preview', previewRouter)
 
 app.use(errorHandler)
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Link Preview API running on port ${PORT}`)
   console.log(`Docs at http://localhost:${PORT}/docs`)
 })
