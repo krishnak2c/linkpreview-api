@@ -26,7 +26,7 @@ app.use(express.json())
 
 const swaggerSpec = swaggerJsdoc({
   definition: {
-    openapi: '3.0.0',
+    openapi: '3.0.3',
     info: {
       title: 'Link Preview API',
       version: '1.0.0',
