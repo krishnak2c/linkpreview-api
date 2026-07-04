@@ -30,7 +30,14 @@ const swaggerSpec = swaggerJsdoc({
     info: {
       title: 'Link Preview API',
       version: '1.0.0',
-      description: 'Extract Open Graph tags, meta data, and previews from any URL.',
+      description: 'Extract Open Graph tags, meta data, and previews from any public URL.',
+      'x-category': 'web-tools',
+      'x-long-description': 'Extract Open Graph (OG) tags, Twitter Cards, meta descriptions, favicons, and embed previews from any public URL. Returns structured JSON with title, description, image, favicon, site name, and resolved URL — ready for social link unfurls, chat previews, and embed cards in any application.',
+      'x-website': 'https://github.com/krishnak2c/linkpreview-api',
+      'x-public': true,
+      'x-version-lifecycle': 'active',
+      'x-badges': [],
+      termsOfService: ''
     },
     servers: [
       { url: process.env.API_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : `http://localhost:${PORT}`) }
@@ -44,7 +51,36 @@ const swaggerSpec = swaggerJsdoc({
         }
       }
     },
-    security: [{ ApiKeyAuth: [] }]
+    security: [{ ApiKeyAuth: [] }],
+    'x-plans': [
+      {
+        name: 'Free',
+        price: 0,
+        requestsPerMonth: 100,
+        rateLimitPerMinute: 10
+      },
+      {
+        name: 'Basic',
+        price: 15,
+        requestsPerMonth: 5000,
+        rateLimitPerMinute: 60
+      },
+      {
+        name: 'Pro',
+        price: 49,
+        requestsPerMonth: 25000,
+        rateLimitPerMinute: 120
+      },
+      {
+        name: 'Ultra',
+        price: 149,
+        requestsPerMonth: 100000,
+        rateLimitPerMinute: 300
+      }
+    ],
+    tags: [
+      { name: 'preview', description: 'Link preview extraction' }
+    ]
   },
   apis: ['./src/routes/*.js']
 })
@@ -52,6 +88,10 @@ const swaggerSpec = swaggerJsdoc({
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   customSiteTitle: 'Link Preview API Docs'
 }))
+
+app.get('/api-docs', (_req, res) => {
+  res.json(swaggerSpec)
+})
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', version: '1.0.0' })
@@ -62,6 +102,7 @@ app.get('/', (_req, res) => {
     name: 'Link Preview API',
     version: '1.0.0',
     docs: '/docs',
+    spec: '/api-docs',
     health: '/health',
     endpoint: 'GET /preview?target=<url>',
     pricing: 'https://rapidapi.com/krishnak2c/api/link-preview-api/pricing',
