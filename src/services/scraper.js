@@ -1,7 +1,7 @@
 import * as cheerio from 'cheerio'
 
-const REQUEST_TIMEOUT_MS = 8_000
-const MAX_RESPONSE_BYTES = 512_000  // abort if HTML is larger than 500KB
+const REQUEST_TIMEOUT_MS = parseInt(process.env.PREVIEW_TIMEOUT_MS) || 8_000
+const MAX_RESPONSE_BYTES = parseInt(process.env.PREVIEW_MAX_BYTES) || 512_000
 
 /**
  * Scrape meta/OG data from a URL.
