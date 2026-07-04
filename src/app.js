@@ -11,7 +11,16 @@ const app = express()
 const PORT = process.env.PORT || 3000
 
 app.set('trust proxy', parseInt(process.env.TRUST_PROXY) || (process.env.RAILWAY_ENVIRONMENT ? 1 : 0))
-app.use(helmet())
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "validator.swagger.io"],
+    }
+  }
+}))
 app.use(cors())
 app.use(express.json())
 
@@ -24,7 +33,7 @@ const swaggerSpec = swaggerJsdoc({
       description: 'Extract Open Graph tags, meta data, and previews from any URL.',
     },
     servers: [
-      { url: process.env.API_URL || `http://localhost:${PORT}` }
+      { url: process.env.API_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : `http://localhost:${PORT}`) }
     ],
     components: {
       securitySchemes: {
