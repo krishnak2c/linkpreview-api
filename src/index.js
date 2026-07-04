@@ -8,7 +8,9 @@ import errorHandler from './middleware/errorHandler.js'
 const app = express()
 const PORT = process.env.PORT || 3000
 
-app.set('trust proxy', 1)
+// trust proxy: only behind Railway (gateway overwrites X-Forwarded-For).
+// Enable only when Railway env is set to prevent XFF spoofing elsewhere.
+app.set('trust proxy', process.env.RAILWAY_ENVIRONMENT ? 1 : false)
 app.use(cors())
 app.use(express.json())
 

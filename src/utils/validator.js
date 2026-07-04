@@ -81,16 +81,32 @@ export async function validateUrl(raw) {
     // Skip for raw IPs (already checked above)
     const isRawIP = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(hostname) || hostname.includes(':')
     if (!isRawIP) {
-      try {
-        const addrs = await dns.resolve4(hostname)
-        if (addrs.some(addr => isPrivateIPv4(addr))) return null
-      } catch {
-        // DNS failure — allow through (could be transient, redirect check is second line)
-      }
+      // Check BOTH A (IPv4) and AAAA (IPv6) records — resolve4-only misses IPv6 SSRF
+      const [a4, a6] = await Promise.all([
+        dns.resolve4(hostname).catch(() => []),
+        dns.resolve6(hostname).catch(() => [])
+      ]);
+      const allAddrs = [...a4, ...a6];
+      if (allAddrs.some(addr => isPrivateIPv4(addr) || isPrivateIPv6(addr))) return null;
     }
 
     return url.href
   } catch {
     return null
   }
+}
+
+/**
+ * Resolve a hostname to its first public IP (prefer IPv4).
+ * Used by the scraper to pin resolved addresses and prevent DNS rebinding TOCTOU.
+ * Returns null if resolution fails or only private IPs exist.
+ */
+export async function resolveAndPin(hostname) {
+  const [a4, a6] = await Promise.all([
+    dns.resolve4(hostname).catch(() => []),
+    dns.resolve6(hostname).catch(() => [])
+  ]);
+  // Prefer IPv4 for compatibility unless only IPv6 available
+  const publicIp = a4.find(addr => !isPrivateIPv4(addr)) || a6.find(addr => !isPrivateIPv6(addr));
+  return publicIp || null;
 }

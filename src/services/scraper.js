@@ -1,47 +1,70 @@
 import * as cheerio from 'cheerio'
-import { validateUrl } from '../utils/validator.js'
+import { validateUrl, resolveAndPin } from '../utils/validator.js'
 
 const REQUEST_TIMEOUT_MS = parseInt(process.env.PREVIEW_TIMEOUT_MS) || 8_000
 const MAX_RESPONSE_BYTES = parseInt(process.env.PREVIEW_MAX_BYTES) || 512_000
 const MAX_REDIRECTS = 5
+
+function isRawIP(hostname) {
+  return /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(hostname) || hostname.includes(':')
+}
 
 /**
  * Scrape meta/OG data from a URL.
  *
  * Returns:
  *   { title, description, image, favicon, siteName, url, resolvedUrl }
- * On fetch failure or parse failure returns null for the whole result
- * (the caller handles the 4xx/5xx error mapping).
+ * or null on fetch/parse failure.
  */
 export async function scrapePreview(url) {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
-  let finalUrl = url
+  const validated = await validateUrl(url)
+  if (!validated) { clearTimeout(timer); return null }
+
+  const parsed = new URL(validated)
+  const hostname = parsed.hostname.toLowerCase()
+  let pinnedHost = null
+  let fetchTarget = validated
+  let finalUrl = validated
+  if (!isRawIP(hostname)) {
+    const ip = await resolveAndPin(hostname)
+    if (ip) {
+      pinnedHost = hostname
+      const ipPart = ip.includes(':') ? `[${ip}]` : ip
+      fetchTarget = `${parsed.protocol}//${ipPart}${parsed.port ? ':' + parsed.port : ''}${parsed.pathname}${parsed.search}${parsed.hash}`
+    }
+  }
+
   let response
   for (let hop = 0; ; hop++) {
     try {
-      response = await fetch(finalUrl, {
+      const headers = {
+        'User-Agent': 'LinkPreviewAPI/1.0 (compatible; preview bot)',
+        Accept: 'text/html,application/xhtml+xml'
+      }
+      if (pinnedHost) headers['Host'] = pinnedHost
+
+      response = await fetch(fetchTarget, {
         signal: controller.signal,
         redirect: 'manual',
-        headers: {
-          'User-Agent': 'LinkPreviewAPI/1.0 (compatible; preview bot)',
-          Accept: 'text/html,application/xhtml+xml'
-        }
+        headers
       })
     } catch {
       clearTimeout(timer)
       return null
     }
 
-    // Handle redirects (301, 302, 303, 307, 308)
     if ([301, 302, 303, 307, 308].includes(response.status)) {
       if (hop >= MAX_REDIRECTS) return null
       const location = response.headers.get('location')
       if (!location) return null
-      const validated = await validateUrl(location)
-      if (!validated) return null
-      finalUrl = validated
+      const validatedRedirect = await validateUrl(location)
+      if (!validatedRedirect) return null
+      fetchTarget = validatedRedirect
+      finalUrl = validatedRedirect
+      pinnedHost = null
       continue
     }
     break
