@@ -51,11 +51,20 @@ Returns `{"status": "ok", "version": "1.0.0"}`.
 
 ## Deploy
 
-### Railway
+### Belamo (Free — Recommended)
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/template/linkpreview-api)
+[![Deploy on Belamo](https://belamo.app/button.svg)](https://belamo.app/new?repo=https://github.com/krishnak2c/linkpreview-api)
 
-Set `PORT` env var if needed (defaults to 3000).
+1. Create a free account at [belamo.app](https://belamo.app)
+2. Click "New Service" → select this GitHub repo
+3. Nixpacks auto-detects Node.js — no config needed
+4. Set `NODE_ENV=production` as an env var (optional, default already set)
+5. Your API is live at `https://<service>.belamo.app`
+
+**Belamo Starter** (free forever):
+- 1 service, 0.5 vCPU / 512 MB RAM
+- Wildcard subdomain, always-on (no sleep)
+- Auto-deploys on every `git push`
 
 ### Docker
 
@@ -64,14 +73,38 @@ docker build -t linkpreview-api .
 docker run -p 3000:3000 linkpreview-api
 ```
 
-## Pricing (via RapidAPI)
+## Monetization
 
-| Tier | Monthly Requests | Price |
-|------|-----------------|-------|
-| Free | 100 | $0 |
-| Basic | 5,000 | $15 |
-| Pro | 25,000 | $49 |
-| Ultra | 100,000 | $149 |
+### RapidAPI Marketplace
+
+List on RapidAPI for automatic billing, rate limiting, and global distribution:
+
+1. Go to [RapidAPI Provider Dashboard](https://rapidapi.com/providers)
+2. Click "Add New API" → use OpenAPI spec at `/docs` or manual entry
+3. Set base URL to your Belamo service URL (`https://<service>.belamo.app`)
+4. Configure tier pricing from the table below
+
+| Tier | Monthly Requests | Price | Rate Limit |
+|------|-----------------|-------|------------|
+| Free | 100 | $0 | 10/min |
+| Basic | 5,000 | $15 | 60/min |
+| Pro | 25,000 | $49 | 120/min |
+| Ultra | 100,000 | $149 | 300/min |
+
+RapidAPI handles all billing, tax, key management, and quota enforcement. The API auto-detects RapidAPI-proxied requests and defers to their gateway limits.
+
+### Direct Access (without RapidAPI)
+
+When accessed directly via Belamo wildcard domain, free quota is 100 requests/day per IP. Upgrade via RapidAPI for higher limits.
+
+## Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `3000` | Server port |
+| `PREVIEW_TIMEOUT_MS` | `8000` | Max fetch time (ms) |
+| `PREVIEW_MAX_BYTES` | `512000` | Max response body (bytes) |
+| `FREE_DAILY_LIMIT` | `100` | Daily requests per IP on free direct access |
 
 ## License
 

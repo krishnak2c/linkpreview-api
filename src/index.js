@@ -3,6 +3,7 @@ import cors from 'cors'
 import swaggerJsdoc from 'swagger-jsdoc'
 import swaggerUi from 'swagger-ui-express'
 import previewRouter from './routes/preview.js'
+import quotaGuard from './middleware/quotaGuard.js'
 import errorHandler from './middleware/errorHandler.js'
 
 const app = express()
@@ -49,6 +50,20 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', version: '1.0.0' })
 })
+
+app.get('/', (_req, res) => {
+  res.json({
+    name: 'Link Preview API',
+    version: '1.0.0',
+    docs: '/docs',
+    health: '/health',
+    endpoint: 'GET /preview?url=<url>',
+    pricing: 'https://rapidapi.com/krishnak2c/api/link-preview-api/pricing',
+    deploy: 'Belamo (belamo.app)'
+  })
+})
+
+app.use(quotaGuard)
 
 app.use('/preview', previewRouter)
 

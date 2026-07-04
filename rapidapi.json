@@ -1,0 +1,97 @@
+{
+  "$schema": "https://rapidapi.com/provider-schema.json",
+  "name": "Link Preview API",
+  "description": "Extract Open Graph tags, meta data, favicons, and previews from any public URL. Returns title, description, image, favicon, site name, and resolved URL — ready for social link unfurls, chat previews, and embed cards.",
+  "version": "1.0.0",
+  "documentation": "https://github.com/krishnak2c/linkpreview-api",
+  "baseUrl": "https://linkpreview-api.belamo.app",
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/preview",
+      "description": "Get link preview for a URL",
+      "parameters": [
+        {
+          "name": "url",
+          "in": "query",
+          "required": true,
+          "description": "Public http/https URL to extract preview from",
+          "example": "https://github.com"
+        }
+      ],
+      "headers": [
+        {
+          "name": "x-rapidapi-key",
+          "required": true,
+          "description": "Your RapidAPI subscription key"
+        },
+        {
+          "name": "x-rapidapi-host",
+          "required": true,
+          "description": "linkpreview-api.p.rapidapi.com"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Preview data",
+          "example": {
+            "title": "GitHub · Build and ship software",
+            "description": "GitHub is where over 100 million developers shape the future of software.",
+            "image": "https://github.githubassets.com/assets/github-logo-55c5b9a1fe52.png",
+            "favicon": "https://github.com/favicon.ico",
+            "siteName": "GitHub",
+            "url": "https://github.com",
+            "resolvedUrl": "https://github.com"
+          }
+        },
+        "400": {
+          "description": "Invalid or missing URL"
+        },
+        "502": {
+          "description": "Failed to fetch or parse the URL"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/health",
+      "description": "Health check endpoint"
+    }
+  ],
+  "pricing": [
+    {
+      "tier": "Free",
+      "price": 0,
+      "requestsPerMonth": 100,
+      "rateLimitPerMinute": 10
+    },
+    {
+      "tier": "Basic",
+      "price": 15,
+      "requestsPerMonth": 5000,
+      "rateLimitPerMinute": 60
+    },
+    {
+      "tier": "Pro",
+      "price": 49,
+      "requestsPerMonth": 25000,
+      "rateLimitPerMinute": 120
+    },
+    {
+      "tier": "Ultra",
+      "price": 149,
+      "requestsPerMonth": 100000,
+      "rateLimitPerMinute": 300
+    }
+  ],
+  "keywords": [
+    "link-preview",
+    "meta-extractor",
+    "og-tags",
+    "url-unfurl",
+    "open-graph",
+    "social-preview",
+    "embed"
+  ],
+  "category": "web-tools"
+}
