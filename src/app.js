@@ -1,5 +1,6 @@
 import express from 'express'
 import cors from 'cors'
+import helmet from 'helmet'
 import swaggerJsdoc from 'swagger-jsdoc'
 import swaggerUi from 'swagger-ui-express'
 import previewRouter from './routes/preview.js'
@@ -10,6 +11,7 @@ const app = express()
 const PORT = process.env.PORT || 3000
 
 app.set('trust proxy', parseInt(process.env.TRUST_PROXY) || (process.env.RAILWAY_ENVIRONMENT ? 1 : 0))
+app.use(helmet())
 app.use(cors())
 app.use(express.json())
 

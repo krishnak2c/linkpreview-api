@@ -39,6 +39,8 @@ export default function quotaGuard(req, res, next) {
   res.set('X-RateLimit-Remaining', String(Math.max(0, FREE_DAILY_LIMIT - count)))
 
   if (count > FREE_DAILY_LIMIT) {
+    const retryAfter = Math.ceil((lastReset + DAY_MS - now) / 1000)
+    res.set('Retry-After', String(retryAfter))
     return res.status(429).json({
       error: 'daily_quota_exceeded',
       message: `Free tier: ${FREE_DAILY_LIMIT} requests/day. Upgrade via RapidAPI for higher limits.`
