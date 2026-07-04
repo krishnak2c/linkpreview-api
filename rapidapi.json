@@ -4,7 +4,7 @@
   "description": "Extract Open Graph tags, meta data, favicons, and previews from any public URL. Returns title, description, image, favicon, site name, and resolved URL — ready for social link unfurls, chat previews, and embed cards.",
   "version": "1.0.0",
   "documentation": "https://github.com/krishnak2c/linkpreview-api",
-  "baseUrl": "https://linkpreview-api.belamo.app",
+  "baseUrl": "https://linkpreview-api.vercel.app",
   "endpoints": [
     {
       "method": "GET",
