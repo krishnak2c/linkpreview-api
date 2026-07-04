@@ -15,13 +15,13 @@ npm start
 
 ## API
 
-### `GET /preview?url=<url>`
+### `GET /preview?target=<url>`
 
 **Parameters:**
 
 | Param | Required | Description |
 |-------|----------|-------------|
-| `url` | yes | Public http/https URL to extract preview from |
+| `target` | yes | Public http/https URL to extract preview from (use `target`; `url` also accepted for backward compat) |
 
 **Response (200):**
 

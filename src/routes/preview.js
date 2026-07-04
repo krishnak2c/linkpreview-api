@@ -28,12 +28,20 @@ function getPlanLimit(req) {
  *     description: Extracts Open Graph tags, meta data, and preview info from any public URL.
  *     parameters:
  *       - in: query
- *         name: url
- *         required: true
+ *         name: target
+ *         required: false
  *         schema:
  *           type: string
  *           format: uri
- *         description: The URL to extract preview data from (must be http/https, public)
+ *         description: The URL to extract preview data from (use this or `url`)
+ *         example: https://github.com
+ *       - in: query
+ *         name: url
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: uri
+ *         description: The URL to extract preview data from (legacy alias, use `target` instead)
  *         example: https://github.com
  *     responses:
  *       200:
@@ -97,13 +105,13 @@ function getPlanLimit(req) {
  */
 router.get('/', limiter, async (req, res, next) => {
   try {
-    const rawUrl = req.query.url
+    const rawUrl = req.query.target || req.query.url
     const url = await validateUrl(rawUrl)
 
     if (!url) {
       return res.status(400).json({
         error: 'invalid_url',
-        message: 'Provide a valid http/https URL as the url query parameter.'
+        message: 'Provide a valid http/https URL as the target (or url) query parameter.'
       })
     }
 
