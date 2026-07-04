@@ -1,0 +1,22 @@
+{
+  "name": "linkpreview-api",
+  "version": "1.0.0",
+  "description": "Link Preview + Meta Extractor API — fetch OG tags, meta data, and previews from any URL",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "node --test src/**/*.test.js"
+  },
+  "keywords": ["link-preview", "meta-extractor", "og-tags", "api", "rapidapi"],
+  "license": "MIT",
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "express-rate-limit": "^7.5.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  }
+}
