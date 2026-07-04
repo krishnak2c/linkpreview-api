@@ -1,7 +1,9 @@
 import * as cheerio from 'cheerio'
+import { validateUrl } from '../utils/validator.js'
 
 const REQUEST_TIMEOUT_MS = parseInt(process.env.PREVIEW_TIMEOUT_MS) || 8_000
 const MAX_RESPONSE_BYTES = parseInt(process.env.PREVIEW_MAX_BYTES) || 512_000
+const MAX_REDIRECTS = 5
 
 /**
  * Scrape meta/OG data from a URL.
@@ -15,19 +17,36 @@ export async function scrapePreview(url) {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
+  let finalUrl = url
   let response
-  try {
-    response = await fetch(url, {
-      signal: controller.signal,
-      headers: {
-        'User-Agent': 'LinkPreviewAPI/1.0 (compatible; preview bot)',
-        Accept: 'text/html,application/xhtml+xml'
-      }
-    })
-  } catch {
-    clearTimeout(timer)
-    return null
+  for (let hop = 0; ; hop++) {
+    try {
+      response = await fetch(finalUrl, {
+        signal: controller.signal,
+        redirect: 'manual',
+        headers: {
+          'User-Agent': 'LinkPreviewAPI/1.0 (compatible; preview bot)',
+          Accept: 'text/html,application/xhtml+xml'
+        }
+      })
+    } catch {
+      clearTimeout(timer)
+      return null
+    }
+
+    // Handle redirects (301, 302, 303, 307, 308)
+    if ([301, 302, 303, 307, 308].includes(response.status)) {
+      if (hop >= MAX_REDIRECTS) return null
+      const location = response.headers.get('location')
+      if (!location) return null
+      const validated = await validateUrl(location)
+      if (!validated) return null
+      finalUrl = validated
+      continue
+    }
+    break
   }
+
   clearTimeout(timer)
 
   if (!response.ok) return null
@@ -73,10 +92,10 @@ export async function scrapePreview(url) {
   // Favicon: prefer apple-touch-icon, then shortcut icon, then /favicon.ico
   const appleTouch = $('link[rel="apple-touch-icon"]').attr('href')
   const faviconLink = $('link[rel="icon"]').attr('href') || $('link[rel="shortcut icon"]').attr('href')
-  const favicon = resolveUrl(appleTouch || faviconLink || '/favicon.ico', url)
+  const favicon = resolveUrl(appleTouch || faviconLink || '/favicon.ico', finalUrl)
 
   // Resolve relative OG/twitter image URLs
-  const resolvedImage = image ? resolveUrl(image, url) : null
+  const resolvedImage = image ? resolveUrl(image, finalUrl) : null
 
   return {
     title: sanitize(title),
@@ -85,7 +104,7 @@ export async function scrapePreview(url) {
     favicon,
     siteName: sanitize(siteName),
     url,
-    resolvedUrl: response.url  // final URL after redirects
+    resolvedUrl: finalUrl
   }
 }
 

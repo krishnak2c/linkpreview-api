@@ -98,7 +98,7 @@ function getPlanLimit(req) {
 router.get('/', limiter, async (req, res, next) => {
   try {
     const rawUrl = req.query.url
-    const url = validateUrl(rawUrl)
+    const url = await validateUrl(rawUrl)
 
     if (!url) {
       return res.status(400).json({
