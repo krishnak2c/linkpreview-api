@@ -62,9 +62,19 @@ export async function scrapePreview(url) {
       if (!location) return null
       const validatedRedirect = await validateUrl(location)
       if (!validatedRedirect) return null
-      fetchTarget = validatedRedirect
+      const redirectParsed = new URL(validatedRedirect)
+      const redirectHost = redirectParsed.hostname.toLowerCase()
+      if (!isRawIP(redirectHost)) {
+        const ip = await resolveAndPin(redirectHost)
+        if (!ip) return null
+        pinnedHost = redirectHost
+        const ipPart = ip.includes(':') ? `[${ip}]` : ip
+        fetchTarget = `${redirectParsed.protocol}//${ipPart}${redirectParsed.port ? ':' + redirectParsed.port : ''}${redirectParsed.pathname}${redirectParsed.search}${redirectParsed.hash}`
+      } else {
+        fetchTarget = validatedRedirect
+        pinnedHost = null
+      }
       finalUrl = validatedRedirect
-      pinnedHost = null
       continue
     }
     break

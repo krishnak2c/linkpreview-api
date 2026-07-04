@@ -22,7 +22,7 @@ const DAY_MS = 86_400_000
 
 export default function quotaGuard(req, res, next) {
   // Let RapidAPI-proxied requests through — they handle their own billing
-  if (req.headers['x-rapidapi-proxy-signature']) return next()
+  if (req.headers['x-rapidapi-proxy-signature'] && typeof req.headers['x-rapidapi-proxy-signature'] === 'string' && req.headers['x-rapidapi-proxy-signature'].trim().length > 0) return next()
 
   // Daily reset
   const now = Date.now()
